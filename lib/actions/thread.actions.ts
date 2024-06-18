@@ -121,6 +121,6 @@ export async function addCommentToThread(
         revalidatePath(path)
 
     }  catch (error: any) {
-        throw new Error(`Failed to create/update user: ${error.message}`)
+        throw new Error(`Error adding comment to thread: ${error.message}`)
     }
 }
