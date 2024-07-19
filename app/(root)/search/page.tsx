@@ -18,8 +18,8 @@ async function Page({
 
   const result = await fetchUsers({
     userId: user.id,
-    searchString: '',
-    pageNumber: 1,
+    searchString: searchParams.q,
+    pageNumber: searchParams?.page ? +searchParams.page : 1,
     pageSize: 25
   })
 
