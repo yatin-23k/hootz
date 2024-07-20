@@ -95,13 +95,16 @@ const ThreadCard = ({
                   className="cursor-pointer object-contain"
                 />
 
-                <Image
-                  src="/assets/share.svg"
-                  alt="like"
-                  width={24}
-                  height={24}
-                  className="cursor-pointer object-contain"
-                />
+                 <Link href={`/thread/${id}/share`}>
+                  <Image
+                    src="/assets/share.svg"
+                    alt="like"
+                    width={24}
+                    height={24}
+                    className="cursor-pointer object-contain"
+                  />
+                 </Link>
+               
               </div>
 
               {isComment && comments.length > 0 && (
