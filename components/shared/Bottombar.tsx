@@ -3,7 +3,7 @@
 import { sidebarLinks } from "@/constants";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname} from "next/navigation";
 
 function Bottombar() {
     const pathname = usePathname();

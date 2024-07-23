@@ -15,6 +15,12 @@ interface Props {
     path: string;
 }
 
+interface LikedProps {
+    userId: string;
+    threadId: string;
+    path?: string;
+}
+
 export async function updateUser({
     username, userId, name, bio, image, path
 } : Props): Promise<void> {
@@ -146,7 +152,6 @@ export async function getActivity(userId: string) {
             model: User,
             select: 'name image _id'
         })
-        console.log(replies)
         return replies;
 
 
@@ -154,3 +159,49 @@ export async function getActivity(userId: string) {
         throw new Error(`Failed to fetch activity: ${error.message}`)
     }
 }
+
+export async function addLikedPost({
+    userId, threadId, path
+  }: LikedProps) {
+    try {
+        const threadExists = await Thread.exists({ _id: threadId });
+        if (!threadExists) {
+          throw new Error('Thread not found');
+        }
+    
+        await User.findByIdAndUpdate(
+          userId,
+          { $addToSet: { likedThreads: threadId } },
+          { new: true }
+        );
+    
+        if (path) {
+          revalidatePath(path);
+        }
+      } catch (error: any) {
+        throw new Error(`Failed to add thread to liked threads: ${error.message}`);
+      }
+}
+
+export async function removeLikedPost({
+    userId,
+    threadId,
+    path,
+  }: LikedProps): Promise<void> {
+    connectToDB();
+  
+    try {
+      await User.findByIdAndUpdate(
+        userId,
+        { $pull: { likedThreads: threadId } },
+        { new: true } 
+      );
+  
+      if (path) {
+        revalidatePath(path);
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to remove thread from liked threads: ${error.message}`);
+    }
+}
+

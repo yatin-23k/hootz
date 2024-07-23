@@ -26,12 +26,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  communities: [
+  likedThreads: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Community",
+      ref: "Thread",
     },
-  ],
+  ]
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

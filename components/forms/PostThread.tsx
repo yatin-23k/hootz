@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,7 +14,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ThreadValidation } from "@/lib/validations/thread";
 import * as z from "zod";
 import { Textarea } from "../ui/textarea";
-import { updateUser } from "@/lib/actions/user.actions";
 import { usePathname, useRouter } from "next/navigation";
 import { createThread } from "@/lib/actions/thread.actions";
 
@@ -47,8 +45,7 @@ function PostThread({ userId }: { userId: string}) {
     const onSubmit = async (values: z.infer<typeof ThreadValidation>) => {
         await createThread({
             text: values.thread,
-            author: userId ,
-            communityId: null ,
+            author: userId,
             path: pathname
         })
 

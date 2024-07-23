@@ -1,9 +1,7 @@
 import ThreadCard from "@/components/cards/ThreadCard";
 import Pagination from "@/components/shared/Pagination";
-import Searchbar from "@/components/shared/Searchbar";
 import { fetchPosts } from "@/lib/actions/thread.actions";
 import { fetchUser } from "@/lib/actions/user.actions";
-import { RedirectToSignIn } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -22,6 +20,7 @@ export default async function Home({
     searchParams.page ? +searchParams.page : 1,
     30
   );
+  
 
   return (
     <>
@@ -32,19 +31,23 @@ export default async function Home({
           <p className="no-result">No threads found</p>
         ) : (
           <>
-            {result.posts.map((post) => (
-              <ThreadCard
-                key={post._id}
-                id={post._id}
-                currentUserId={user?.id || ""}
-                parentId={post.parentId}
-                content={post.text}
-                author={post.author}
-                community={post.community}
-                createdAt={post.createdAt}
-                comments={post.children}
-              />
-            ))}
+            {result.posts.map((post) => {
+              const thread = JSON.parse(JSON.stringify(post))
+              const userData = JSON.parse(JSON.stringify(userInfo))
+              return (
+                <ThreadCard
+                  key={thread._id}
+                  id={thread._id}
+                  currentUserId={userData?._id || ""}
+                  accountId={userData?.id || ""}
+                  parentId={thread.parentId}
+                  content={thread.text}
+                  author={thread.author}
+                  createdAt={thread.createdAt}
+                  comments={thread.children}
+                  initialLikedBy={thread.likedBy}
+                />
+            )})}
           </>
         )}
       </section>

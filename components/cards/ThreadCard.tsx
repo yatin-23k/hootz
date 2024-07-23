@@ -1,11 +1,17 @@
-import { formatDateString } from "@/lib/utils";
+"use client"
 import Image from "next/image";
 import Link from "next/link";
 import DeleteThread from "../forms/DeleteThread";
+import { addLikedByUser, removeLikedByUser } from "@/lib/actions/thread.actions";
+import { addLikedPost, removeLikedPost } from "@/lib/actions/user.actions";
+import { useState } from "react";
+import { format } from 'date-fns';
+import { usePathname } from "next/navigation";
 
 interface Props {
   id: string;
   currentUserId: string;
+  accountId: string;
   parentId: string | null;
   content: string;
   author: {
@@ -13,11 +19,6 @@ interface Props {
     image: string;
     id: string;
   };
-  community: {
-    name: string;
-    image: string;
-    id: string;
-  } | null;
   createdAt: string;
   comments: {
     author: {
@@ -25,19 +26,43 @@ interface Props {
     };
   }[];
   isComment?: boolean;
+  initialLikedBy: string[];
 }
 
 const ThreadCard = ({
   id,
   currentUserId,
+  accountId,
   parentId,
   content,
   author,
-  community,
   createdAt,
   comments,
   isComment,
+  initialLikedBy,
 }: Props) => {
+  const pathname = usePathname();
+  const [likedBy, setLikedBy] = useState<string[]>(initialLikedBy);
+  const isLiked = likedBy.includes(currentUserId);
+
+  const handleLike = async () => {
+    try {
+      if (isLiked) {
+        await removeLikedByUser({userId: currentUserId, threadId: id, path: pathname});
+        await removeLikedPost({userId: currentUserId, threadId: id, path: pathname});
+        setLikedBy((prev) => prev.filter((userId) => userId !== currentUserId));
+      } else {
+        await addLikedByUser({userId: currentUserId, threadId: id, path: pathname});
+        await addLikedPost({userId: currentUserId, threadId: id, path: pathname});
+        setLikedBy((prev) => [...prev, currentUserId]);
+      }
+    } catch (error) {
+      console.error("Failed to update like status:", error);
+    }
+  };
+
+  const formattedDate = format(new Date(createdAt), "p - d MMM yyyy");
+
   return (
     <article
       className={`lex w-full flex-col rounded-xl  ${
@@ -70,11 +95,12 @@ const ThreadCard = ({
             <div className={`${isComment && `mb-10`} mt-5 flex flex-col gap-3`}>
               <div className="flex gap-3.5">
                 <Image
-                  src="/assets/heart-gray.svg"
+                  src={isLiked ? "/assets/heart-filled.svg" : "/assets/heart-gray.svg"}
                   alt="like"
                   width={24}
                   height={24}
                   className="cursor-pointer object-contain"
+                  onClick={handleLike}
                 />
 
                 <Link href={`/thread/${id}`}>
@@ -87,17 +113,9 @@ const ThreadCard = ({
                   />
                 </Link>
 
-                <Image
-                  src="/assets/repost.svg"
-                  alt="like"
-                  width={24}
-                  height={24}
-                  className="cursor-pointer object-contain"
-                />
-
                  <Link href={`/thread/${id}/share`}>
                   <Image
-                    src="/assets/share.svg"
+                    src="/assets/repost.svg"
                     alt="like"
                     width={24}
                     height={24}
@@ -119,7 +137,7 @@ const ThreadCard = ({
         </div>
         <DeleteThread
           threadId={JSON.stringify(id)}
-          currentUserId={currentUserId}
+          currentUserId={accountId}
           authorId={author.id}
           parentId={parentId}
           isComment={isComment}
@@ -149,7 +167,7 @@ const ThreadCard = ({
       {!isComment && (
         <div className="mt-5 flex items-center">
           <p className="ml-3 text-subtle-medium text-gray-1">
-            {formatDateString(createdAt)}
+            {formattedDate}
           </p>
         </div>
       )}

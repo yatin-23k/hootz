@@ -8,16 +8,21 @@ import { connectToDB } from "../mongoose";
 interface Params {
     text: string,
     author: string,
-    communityId: string | null,
     path: string,
 }
 
-export async function createThread({ text, author, communityId, path }: Params) {
+interface LikedProps {
+    userId: string;
+    threadId: string;
+    path?: string;
+}
+
+export async function createThread({ text, author, path }: Params) {
     try{
         connectToDB();
 
         const createdThread = await Thread.create({
-            text, author, community: null, 
+            text, author,  
         });
 
         await User.findByIdAndUpdate(author, {
@@ -135,40 +140,54 @@ async function fetchAllChildThreads(threadId: string): Promise<any[]> {
     }
   
     return descendantThreads;
-  }
+}
 
 export async function deleteThread(id: string, path: string): Promise<void> {
     try {
       connectToDB();
-  
-      // Find the thread to be deleted (the main thread)
-      const mainThread = await Thread.findById(id).populate("author community");
+
+      const mainThread = await Thread.findById(id)
   
       if (!mainThread) {
         throw new Error("Thread not found");
       }
-  
-      // Fetch all child threads and their descendants recursively
+
       const descendantThreads = await fetchAllChildThreads(id);
   
-      // Get all descendant thread IDs including the main thread ID and child thread IDs
       const descendantThreadIds = [
         id,
         ...descendantThreads.map((thread) => thread._id),
       ];
-  
-      // Extract the authorIds and communityIds to update User and Community models respectively
+
+      let parentThreadId: string | null = null;
+      
+      if (mainThread.parentId) {
+          parentThreadId = mainThread.parentId;
+      }
+
+      if (parentThreadId) {
+          await Thread.findByIdAndUpdate(parentThreadId, {
+              $pull: { children: id },
+          });
+      }
+
       const uniqueAuthorIds = new Set(
         [
           ...descendantThreads.map((thread) => thread.author?._id?.toString()), // Use optional chaining to handle possible undefined values
           mainThread.author?._id?.toString(),
         ].filter((id) => id !== undefined)
       );
-  
-      // Recursively delete child threads and their descendants
+
+      const usersWhoLiked = await User.find({ likedThreads: { $in: descendantThreadIds } });
+
+      for (const user of usersWhoLiked) {
+        await User.findByIdAndUpdate(user._id, {
+          $pull: { likedThreads: { $in: descendantThreadIds } },
+        });
+      }
+
       await Thread.deleteMany({ _id: { $in: descendantThreadIds } });
-  
-      // Update User model
+
       await User.updateMany(
         { _id: { $in: Array.from(uniqueAuthorIds) } },
         { $pull: { threads: { $in: descendantThreadIds } } }
@@ -178,4 +197,59 @@ export async function deleteThread(id: string, path: string): Promise<void> {
     } catch (error: any) {
       throw new Error(`Failed to delete thread: ${error.message}`);
     }
-  }
+}
+
+export async function addLikedByUser({
+    userId,
+    threadId,
+    path,
+  }: LikedProps): Promise<void> {
+    connectToDB();
+  
+    try {
+      const userExists = await User.exists({ _id: userId });
+      if (!userExists) {
+        throw new Error('User not found');
+      }
+  
+      await Thread.findByIdAndUpdate(
+        threadId,
+        { $addToSet: { likedBy: userId } }, 
+        { new: true }
+      );
+  
+      if (path) {
+        revalidatePath(path);
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to add user to likedBy array: ${error.message}`);
+    }
+}
+
+export async function removeLikedByUser({
+    userId,
+    threadId,
+    path,
+  }: LikedProps): Promise<void> {
+    connectToDB();
+  
+    try {
+      const userExists = await User.exists({ _id: userId });
+      if (!userExists) {
+        throw new Error('User not found');
+      }
+  
+      await Thread.findByIdAndUpdate(
+        threadId,
+        { $pull: { likedBy: userId } }, 
+        { new: true }
+      );
+  
+      if (path) {
+        revalidatePath(path);
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to remove user from likedBy array: ${error.message}`);
+    }
+}
+

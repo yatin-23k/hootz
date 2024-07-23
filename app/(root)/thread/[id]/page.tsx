@@ -14,27 +14,30 @@ const Page = async ({ params }: { params: { id: string } }) => {
     const userInfo = await fetchUser(user.id);
     if(!userInfo?.onboarded) redirect('/onboarding')
 
-    const post = await fetchThreadById(params.id);
-
+    const thread = await fetchThreadById(params.id);
+    const post = JSON.parse(JSON.stringify(thread))
+    const userData = JSON.parse(JSON.stringify(userInfo))
+    
     return (
         <section className="relative">
         <div>
           <ThreadCard
             key={post._id}
             id={post._id}
-            currentUserId={user?.id || ""}
+            currentUserId={userData?._id || ""}
+            accountId={userData?.id}
             parentId={post.parentId}
             content={post.text}
             author={post.author}
-            community={post.community}
             createdAt={post.createdAt}
             comments={post.children}
+            initialLikedBy={post.likedBy}
           />
         </div>
 
         <div className="mt-7">
           <Comment 
-            threadId={post.id} 
+            threadId={post._id} 
             currentUserImg = {userInfo.image}  
             currentUserId = {JSON.stringify(userInfo._id)}
           />
@@ -45,14 +48,15 @@ const Page = async ({ params }: { params: { id: string } }) => {
             <ThreadCard
             key={childItem._id}
             id={childItem._id}
-            currentUserId={user?.id || ""}
+            currentUserId={userData?._id || ""}
+            accountId={userData?.id}
             parentId={childItem.parentId}
             content={childItem.text}
             author={childItem.author}
-            community={childItem.community}
             createdAt={childItem.createdAt}
             comments={childItem.children}
             isComment
+            initialLikedBy={childItem.likedBy}
           />
           ))}
         </div>

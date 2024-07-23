@@ -1,21 +1,24 @@
-import { fetchUserPosts } from "@/lib/actions/user.actions";
 import { redirect } from "next/navigation";
 import ThreadCard from "../cards/ThreadCard";
+import { fetchThreadById } from "@/lib/actions/thread.actions";
 
 interface Props {
   currentUserId: string;
+  likedThreads: string[];
   accountId: string;
 }
 
-const ThreadsTab = async ({ currentUserId, accountId}: Props) => {
-  let result = await fetchUserPosts(accountId);
+const LikedTab = async ({ currentUserId, likedThreads, accountId}: Props) => {
+  let result = likedThreads;
 
   if (!result) redirect("/");
 
   return (
     <section className="mt-9 flex flex-col gap-10">
-      {result.threads.map((thread: any) => {
+      {result.map(async (threadId: any) => {
+        const thread = await fetchThreadById(threadId)
         const post = JSON.parse(JSON.stringify(thread))
+        
         return (
             <ThreadCard
               key={post._id}
@@ -24,9 +27,7 @@ const ThreadsTab = async ({ currentUserId, accountId}: Props) => {
               accountId={accountId}
               parentId={post.parentId}
               content={post.text}
-              author={
-                {name: result.name, image: result.image, id: result.id} 
-              }
+              author={post.author}
               createdAt={post.createdAt}
               comments={post.children}
               initialLikedBy={post.likedBy}
@@ -36,4 +37,4 @@ const ThreadsTab = async ({ currentUserId, accountId}: Props) => {
   );
 };
 
-export default ThreadsTab;
+export default LikedTab;

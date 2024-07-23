@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation'
 import { profileTabs } from "@/constants";
 import ThreadsTab from "@/components/shared/ThreadsTab";
 import Image from "next/image";
+import LikedTab from "@/components/shared/LikedTab";
+import RepliesTab from "@/components/shared/RepliesTab";
 
 async function Page({ params }: { params: { id: string }}) {
     const user = await currentUser();
@@ -13,6 +15,8 @@ async function Page({ params }: { params: { id: string }}) {
 
     const userInfo = await fetchUser(params.id);
     if(!userInfo?.onboarded) redirect('/onboarding');
+
+    const userData = JSON.parse(JSON.stringify(userInfo))
 
     return (
         <section>
@@ -47,15 +51,28 @@ async function Page({ params }: { params: { id: string }}) {
                             </TabsTrigger>
                         ))}
                     </TabsList>
-                    {profileTabs.map((tab) => (
-                        <TabsContent key={`content-${tab.label}`} value={tab.value} className="w-full text-light-1">
-                            <ThreadsTab 
-                              currentUserId={user.id}
-                              accountId={userInfo.id}
-                              accountType="User"
-                            />
-                        </TabsContent>
-                    ))}
+
+                    <TabsContent key="content-threads" value="threads" className="w-full text-light-1">
+                        <ThreadsTab 
+                            currentUserId={userData._id}
+                            accountId={userInfo.id}
+                        />
+                    </TabsContent>
+
+                    <TabsContent key="content-replies" value="replies" className="w-full text-light-1">
+                        <RepliesTab 
+                            currentUserId={userData._id}
+                            accountId={userInfo.id}
+                        />
+                    </TabsContent>
+
+                    <TabsContent key="content-liked" value="liked" className="w-full text-light-1">
+                        <LikedTab 
+                            currentUserId={userData._id}
+                            likedThreads={userData.likedThreads}
+                            accountId={userInfo.id}
+                        />
+                    </TabsContent>
                 </Tabs>
             </div>
         </section>

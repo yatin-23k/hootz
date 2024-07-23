@@ -7,10 +7,6 @@ const threadSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
-    communities: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Community",
-    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -22,6 +18,12 @@ const threadSchema = new mongoose.Schema({
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Thread'
+        }
+    ],
+    likedBy: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
         }
     ]
 
