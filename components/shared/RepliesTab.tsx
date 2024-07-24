@@ -1,24 +1,23 @@
 import { redirect } from "next/navigation";
 import ThreadCard from "../cards/ThreadCard";
 import { fetchThreadById } from "@/lib/actions/thread.actions";
-import { getActivity } from "@/lib/actions/user.actions";
+import { fetchUserComments, getActivity } from "@/lib/actions/user.actions";
 
 interface Props {
   currentUserId: string;
-  accountId: string
+  accountId: string;
 }
 
 const LikedTab = async ({ currentUserId, accountId}: Props) => {
 
-    const activity = await getActivity(currentUserId);
+    const replies = await fetchUserComments(currentUserId);
 
   return (
     <section className="mt-9 flex flex-col gap-10">
-      {activity.map((thread: any) => {
+      {replies.map((thread: any) => {
         const post = JSON.parse(JSON.stringify(thread))
-        console.log("pay attention ...........................")
+        console.log("This is post...............")
         console.log(post)
-    
         return (
             <ThreadCard
               key={post._id}

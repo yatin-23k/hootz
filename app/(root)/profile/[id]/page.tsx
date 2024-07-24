@@ -11,7 +11,7 @@ import RepliesTab from "@/components/shared/RepliesTab";
 
 async function Page({ params }: { params: { id: string }}) {
     const user = await currentUser();
-    if(!user) return null;
+    if(!user) return null;  
 
     const userInfo = await fetchUser(params.id);
     if(!userInfo?.onboarded) redirect('/onboarding');
@@ -55,14 +55,15 @@ async function Page({ params }: { params: { id: string }}) {
                     <TabsContent key="content-threads" value="threads" className="w-full text-light-1">
                         <ThreadsTab 
                             currentUserId={userData._id}
-                            accountId={userInfo.id}
+                            accountId={user.id}
+                            userId={userData.id}
                         />
                     </TabsContent>
 
                     <TabsContent key="content-replies" value="replies" className="w-full text-light-1">
                         <RepliesTab 
                             currentUserId={userData._id}
-                            accountId={userInfo.id}
+                            accountId={user.id}
                         />
                     </TabsContent>
 
@@ -70,7 +71,7 @@ async function Page({ params }: { params: { id: string }}) {
                         <LikedTab 
                             currentUserId={userData._id}
                             likedThreads={userData.likedThreads}
-                            accountId={userInfo.id}
+                            accountId={user.id}
                         />
                     </TabsContent>
                 </Tabs>

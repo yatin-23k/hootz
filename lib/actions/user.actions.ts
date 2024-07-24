@@ -76,6 +76,7 @@ export async function fetchUserPosts(userId: string) {
                                             }
                                         }
                                     })
+                                    
         return threads;                                
 
     } catch (error: any) {
@@ -152,6 +153,7 @@ export async function getActivity(userId: string) {
             model: User,
             select: 'name image _id'
         })
+        
         return replies;
 
 
@@ -205,3 +207,39 @@ export async function removeLikedPost({
     }
 }
 
+export const fetchUserComments = async (userId: string) => {
+    try {
+      await connectToDB();
+  
+      const userReplies = await Thread.find({ author: userId, parentId: { $ne: null } })
+                                        .populate({
+                                            path: 'author',
+                                            model: User,
+                                            select: 'name image _id'
+                                        })
+                                        .populate({
+                                            path: 'children',
+                                            populate: [
+                                                {
+                                                    path: 'author',
+                                                    model: User,
+                                                    select: "_id id name parentId image"
+                                                },
+                                                {
+                                                    path: 'children',
+                                                    model: Thread,
+                                                    populate: {
+                                                        path: 'author',
+                                                        model: User,
+                                                        select: "_id id name parentId image"
+                                                    }
+                                                }
+                                            ]
+                                        })
+  
+      return userReplies;
+    } catch (error) {
+      console.error("Failed to fetch user replies:", error);
+      throw new Error("Failed to fetch user replies");
+    }
+  };

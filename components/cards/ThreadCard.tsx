@@ -41,7 +41,20 @@ const ThreadCard = ({
   isComment,
   initialLikedBy,
 }: Props) => {
+  
   const pathname = usePathname();
+
+  let visitor = false;
+  const match = pathname.match(/\/profile\/(user_[a-zA-Z0-9]+)/);
+  if (match) {
+    const userId = match[1];
+    if(userId !== accountId) {
+      visitor = true;
+    }
+  } else {
+    console.log("No user ID found in pathname.");
+  }
+
   const [likedBy, setLikedBy] = useState<string[]>(initialLikedBy);
   const isLiked = likedBy.includes(currentUserId);
 
@@ -100,7 +113,7 @@ const ThreadCard = ({
                   width={24}
                   height={24}
                   className="cursor-pointer object-contain"
-                  onClick={handleLike}
+                  onClick={!visitor ? handleLike : undefined}
                 />
 
                 <Link href={`/thread/${id}`}>
@@ -135,13 +148,13 @@ const ThreadCard = ({
             </div>
           </div>
         </div>
-        <DeleteThread
+        {!visitor && <DeleteThread
           threadId={JSON.stringify(id)}
           currentUserId={accountId}
           authorId={author.id}
           parentId={parentId}
           isComment={isComment}
-        />
+        />}
       </div>
       {!isComment && comments.length > 0 && (
         <div className='ml-1 mt-3 flex items-center gap-2'>
