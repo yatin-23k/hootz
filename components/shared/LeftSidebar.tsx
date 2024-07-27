@@ -1,10 +1,10 @@
 "use client"
 
-import { sidebarLinks } from "@/constants";
+import { leftSidebarLinks } from "@/constants";
 import { SignOutButton, SignedIn, useAuth } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, } from "next/navigation";
 
 function LeftSidebar() {
     const pathname = usePathname();
@@ -13,7 +13,7 @@ function LeftSidebar() {
     return (
         <section className="custom-scrollbar leftsidebar">
             <div className="flex w-full flex-1 flex-col gap-6 px-6">
-                {sidebarLinks.map((link) => {
+                {leftSidebarLinks.map((link) => {
 
                     const isActive = (pathname.includes(link.route) && link.route.length > 1) || pathname === link.route;
                     

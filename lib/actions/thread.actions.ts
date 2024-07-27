@@ -214,9 +214,15 @@ export async function addLikedByUser({
   
       await Thread.findByIdAndUpdate(
         threadId,
-        { $addToSet: { likedBy: userId } }, 
+        { 
+          $addToSet: { likedBy: userId },
+          $inc: { likedByCount: 1 } 
+        }, 
+        
         { new: true }
       );
+
+      
   
       if (path) {
         revalidatePath(path);
@@ -241,7 +247,10 @@ export async function removeLikedByUser({
   
       await Thread.findByIdAndUpdate(
         threadId,
-        { $pull: { likedBy: userId } }, 
+        { 
+          $pull: { likedBy: userId },
+          $inc: { likedByCount: -1 } 
+        }, 
         { new: true }
       );
   
@@ -251,5 +260,59 @@ export async function removeLikedByUser({
     } catch (error: any) {
       throw new Error(`Failed to remove user from likedBy array: ${error.message}`);
     }
+}
+
+export async function fetchFilteredPosts(pageNumber = 1, pageSize = 20, filter = 'all-time') {
+  connectToDB();
+
+  const skipAmount = (pageNumber - 1) * pageSize;
+
+  // Determine the date range based on the filter
+  let dateRange = {};
+  switch (filter) {
+      case 'past-year':
+          dateRange = { createdAt: { $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1)) } };
+          break;
+      case 'past-month':
+          dateRange = { createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) } };
+          break;
+      case 'past-week':
+          dateRange = { createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) } };
+          break;
+      case 'past-24-hours':
+          dateRange = { createdAt: { $gte: new Date(new Date().setHours(new Date().getHours() - 24)) } };
+          break;
+      case 'all-time':
+      default:
+          dateRange = {};
+          break;
+  }
+
+  const postsQuery = Thread.find({ 
+          parentId: { $in: [null, undefined] },
+          ...dateRange
+      })
+      .sort({ likedByCount : -1 })
+      .skip(skipAmount)
+      .limit(pageSize)
+      .populate({ path: 'author', model: User })
+      .populate({ path: 'children', 
+          populate: { path: 'author', model: User, select: "_id name parentId image" }
+      })
+
+
+
+  const totalPostsCount = await Thread.countDocuments({ 
+          parentId: { $in: [null, undefined] },
+          ...dateRange
+      });
+  
+  const posts = await postsQuery.exec();
+  console.log("This is sparta...........................")
+  console.log(posts.map(post => ({ id: post._id, likedByCount: post.likedByCount })));
+
+  const isNext = totalPostsCount > skipAmount + posts.length;
+
+  return { posts, isNext };
 }
 

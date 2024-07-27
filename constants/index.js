@@ -1,4 +1,4 @@
-export const sidebarLinks = [
+export const leftSidebarLinks = [
     {
       imgURL: "/assets/home.svg",
       route: "/",
@@ -25,10 +25,34 @@ export const sidebarLinks = [
       label: "Profile",
     },
   ];
+
+  export const rightSidebarLinks = [
+    {
+      route: "/popular/all-time",
+      label: "All time",
+    },
+    {
+      route: "/popular/past-year",
+      label: "Past year",
+    },
+    {
+      route: "/popular/past-month",
+      label: "Past month",
+    },
+    {
+      route: "/popular/past-week",
+      label: "Past week",
+    },
+    {
+      route: "/popular/past-24-hours",
+      label: "Past 24Hours",
+    },
+  ];
   
   export const profileTabs = [
     { value: "threads", label: "Threads", icon: "/assets/reply.svg" },
     { value: "replies", label: "Replies", icon: "/assets/members.svg" },
     { value: "liked", label: "Liked", icon: "/assets/heart-filled.svg" },
   ];
+
   

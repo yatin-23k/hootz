@@ -23,7 +23,7 @@ function DeleteThread({
   const pathname = usePathname();
   const router = useRouter();
 
-  if (currentUserId !== authorId || pathname === "/") return null;
+  if (currentUserId !== authorId || pathname === "/" || pathname.includes('/popular')) return null;
 
   return (
     <Image

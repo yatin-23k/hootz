@@ -51,9 +51,7 @@ const ThreadCard = ({
     if(userId !== accountId) {
       visitor = true;
     }
-  } else {
-    console.log("No user ID found in pathname.");
-  }
+  } 
 
   const [likedBy, setLikedBy] = useState<string[]>(initialLikedBy);
   const isLiked = likedBy.includes(currentUserId);
