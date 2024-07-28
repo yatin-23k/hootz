@@ -29,8 +29,6 @@ function Pagination({ pageNumber, isNext, path }: Props) {
     }
   };
 
-  if (!isNext && pageNumber === 1) return null;
-
   return (
     <div className='pagination'>
       <Button

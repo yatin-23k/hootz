@@ -308,8 +308,6 @@ export async function fetchFilteredPosts(pageNumber = 1, pageSize = 20, filter =
       });
   
   const posts = await postsQuery.exec();
-  console.log("This is sparta...........................")
-  console.log(posts.map(post => ({ id: post._id, likedByCount: post.likedByCount })));
 
   const isNext = totalPostsCount > skipAmount + posts.length;
 

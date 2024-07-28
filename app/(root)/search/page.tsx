@@ -20,7 +20,7 @@ async function Page({
     userId: user.id,
     searchString: searchParams.q,
     pageNumber: searchParams?.page ? +searchParams.page : 1,
-    pageSize: 1
+    pageSize: 3
   })
 
   return (

@@ -16,8 +16,6 @@ const LikedTab = async ({ currentUserId, accountId}: Props) => {
     <section className="mt-9 flex flex-col gap-10">
       {replies.map((thread: any) => {
         const post = JSON.parse(JSON.stringify(thread))
-        console.log("This is post...............")
-        console.log(post)
         return (
             <ThreadCard
               key={post._id}
